@@ -5,20 +5,23 @@ on:
     - cron: '0 0 * * *'
   workflow_dispatch:
 
-env:
-  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true   # 强制使用 Node.js 24
-
 jobs:
   crawl:
     runs-on: ubuntu-latest
+    env:
+      FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
-          node-version: '18'   # 这里保持不变，它控制的是您的代码运行环境
+          node-version: '18'
       - run: npm ci
-      - run: node crawler.js
-      - run: |
+      - name: Install Playwright browsers
+        run: npx playwright install firefox
+      - name: Run crawler
+        run: node crawler.js
+      - name: Commit and push if changes
+        run: |
           git config --global user.name 'github-actions[bot]'
           git config --global user.email 'github-actions[bot]@users.noreply.github.com'
           git add schedule.json
